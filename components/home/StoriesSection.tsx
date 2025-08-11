@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, Text } from 'react-native';
 import { Plus } from 'lucide-react-native';
 import StoryCircle from '@/components/ui/StoryCircle';
-import StoryUploadModal from '@/components/ui/StoryUploadModal';
+import InstagramStoryUploadModal from '@/components/ui/InstagramStoryUploadModal';
 import { Story } from '@/types';
 import { useAuthStore } from '@/store/auth-store';
 import Colors from '@/constants/colors';
@@ -24,9 +24,6 @@ export const StoriesSection: React.FC<StoriesSectionProps> = ({
 }) => {
   const { user } = useAuthStore();
   const [showUploadModal, setShowUploadModal] = useState(false);
-  const [modalInitialMode, setModalInitialMode] = useState<'camera' | 'view'>('camera');
-
-  const [isAddingNew, setIsAddingNew] = useState(false); // Track if we're adding a new story
 
   const safeStories = Array.isArray(stories) ? stories : [];
   const safeFetchedStories = Array.isArray(fetchedStories) ? fetchedStories : [];
@@ -50,18 +47,10 @@ export const StoriesSection: React.FC<StoriesSectionProps> = ({
   }, {} as Record<string, Story[]>);
 
   const handleUserStoryPress = () => {
-    setIsAddingNew(false);
-    if (safeUserStories.length > 0) {
-      setModalInitialMode('view');
-    } else {
-      setModalInitialMode('camera');
-    }
     setShowUploadModal(true);
   };
 
   const handleAddNewStory = () => {
-    setIsAddingNew(true);
-    setModalInitialMode('camera');
     setShowUploadModal(true);
   };
 
@@ -80,7 +69,6 @@ export const StoriesSection: React.FC<StoriesSectionProps> = ({
       onAddStory();
     }
     setShowUploadModal(false);
-    console.log(isAddingNew ? 'New story added!' : 'Story viewed/uploaded successfully!');
   };
 
   const handleCloseModal = () => {
@@ -153,13 +141,10 @@ export const StoriesSection: React.FC<StoriesSectionProps> = ({
       </ScrollView>
 
       {/* Story Upload/View Modal */}
-      <StoryUploadModal
+      <InstagramStoryUploadModal
         visible={showUploadModal}
         onClose={handleCloseModal}
         onSuccess={handleUploadSuccess}
-        initialMode={modalInitialMode}
-        userStories={safeUserStories}
-        followerStories={otherUserStories}
       />
     </View>
   );
