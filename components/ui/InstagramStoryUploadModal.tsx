@@ -54,6 +54,7 @@ import { useAuthStore } from '@/store/auth-store';
 import Colors from '@/constants/colors';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
+import { uploadStory } from '@/api/user';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -105,6 +106,7 @@ const InstagramStoryUploadModal: React.FC<InstagramStoryUploadModalProps> = ({
   const [storyElements, setStoryElements] = useState<StoryElement[]>([]);
   const [selectedFilter, setSelectedFilter] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   
   const { token, user } = useAuthStore();
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -243,6 +245,25 @@ const InstagramStoryUploadModal: React.FC<InstagramStoryUploadModalProps> = ({
       elements: [],
     });
     setMode('edit');
+  };
+
+  const handleUpload = async () => {
+    if (!selectedMedia || !token) {
+      Alert.alert('Error', 'No media selected or user not authenticated.');
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      await uploadStory(token, selectedMedia.uri, selectedMedia.type);
+      Alert.alert('Success', 'Story uploaded successfully!');
+      onSuccess();
+    } catch (error) {
+      console.error('Upload failed:', error);
+      Alert.alert('Error', 'Failed to upload story. Please try again.');
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const addStoryElement = (type: ToolType, content: any) => {
@@ -434,9 +455,15 @@ const InstagramStoryUploadModal: React.FC<InstagramStoryUploadModalProps> = ({
         
         <Text style={styles.editTitle}>Edit Story</Text>
         
-        <TouchableOpacity style={styles.shareButton} onPress={() => {}}>
-          <Text style={styles.shareText}>Your Story</Text>
-          <ChevronRight size={16} color="#fff" />
+        <TouchableOpacity style={styles.shareButton} onPress={handleUpload}>
+          {isUploading ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <>
+              <Text style={styles.shareText}>Your Story</Text>
+              <ChevronRight size={16} color="#fff" />
+            </>
+          )}
         </TouchableOpacity>
       </View>
 
